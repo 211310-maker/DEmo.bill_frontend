@@ -6,13 +6,13 @@ import Loader from '../components/Loader';
 import { fields, LOCAL_STORAGE_KEY } from '../constants';
 import { getDetailsApi } from '../utils/api';
 
-const Assam = () => {
+const Telangana = () => {
   const isLoggedIn = JSON.parse(localStorage.getItem(LOCAL_STORAGE_KEY));
 
   // all inputs fields
   const history = useHistory();
 
-  const state = 'assam';
+  const state = 'telangana';
   const form = useRef(null);
   const [payLoad, setPayLoad] = useState({
     vehicleNo: '',
@@ -96,7 +96,7 @@ const Assam = () => {
     setPayLoad({ ...p });
   };
 
-  if (!isLoggedIn.accessState.includes(fields.stateName.assam)) {
+  if (!isLoggedIn.accessState.includes(fields.stateName.telangana)) {
     return (
       <>
         <Header />
@@ -111,7 +111,7 @@ const Assam = () => {
       <Header />
       <div className='text-center'>
         <p className='login-heading mt-4'>
-          <b>BORDER TAX PAYMENT FOR ENTRY INTO</b> <span>ASSAM</span>
+          <b>BORDER TAX PAYMENT FOR ENTRY INTO</b> <span>TELANGANA</span>
         </p>
       </div>
       <div className='box box--main mt-4'>
@@ -211,7 +211,7 @@ const Assam = () => {
                   id='vehiclePermitType'
                 >
                   <option value=''>--Select Vehicle Type--</option>
-                  {fields.assam.vehiclePermitType.map((type) => {
+                  {fields.telangana.vehiclePermitType.map((type) => {
                     return (
                       <option key={type.name} value={type.name}>
                         {type.name}
@@ -313,7 +313,7 @@ const Assam = () => {
                       id='borderBarrier'
                     >
                       <option value=''>--Select District Name--</option>
-                      {fields.assam.borderBarrier.map((district) => {
+                      {fields.telangana.borderBarrier.map((district) => {
                         return (
                           <option key={district.name} value={district.name}>
                             {district.name}
@@ -342,7 +342,7 @@ const Assam = () => {
                       id='checkpostName'
                     >
                       <option value=''>--Select Checkpost Name--</option>
-                      {fields.assam.checkPostName.map((checkpost) => {
+                      {fields.telangana.checkPostName.map((checkpost) => {
                         return (
                           <option key={checkpost.name} value={checkpost.name}>
                             {checkpost.name}
@@ -490,7 +490,7 @@ const Assam = () => {
                       onChange={onChangeHandler}
                     >
                       <option value=''>--Select Service Type--</option>
-                      {fields.assam.serviceType.map((type) => {
+                      {fields.telangana.serviceType.map((type) => {
                         return (
                           <option value={type.name} key={type.name}>
                             {type.name}
@@ -719,4 +719,4 @@ const Assam = () => {
   );
 };
 
-export default Assam;
+export default Telangana;
