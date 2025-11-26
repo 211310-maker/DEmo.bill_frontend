@@ -1,18 +1,26 @@
+// frontend/src/config/env.js
+
+// LOCAL config: used when REACT_APP_ENV is not "production"
 const local = {
-  ENV: process.env['REACT_APP_ENV'],
-  API_BASE_URL: process.env['REACT_APP_API_BASE_URL'],
+  ENV: process.env.REACT_APP_ENV || "local",
+  // default to localhost backend for local dev
+  API_BASE_URL:
+    process.env.REACT_APP_API_BASE_URL || "http://localhost:5000",
 };
 
+// PROD config: used when REACT_APP_ENV === "production"
 const prod = {
-  ENV: process.env['REACT_APP_ENV'],
-  API_BASE_URL: process.env['REACT_APP_API_BASE_URL'],
+  ENV: process.env.REACT_APP_ENV || "production",
+  // on Render, you'll set REACT_APP_API_BASE_URL to:
+  // https://demo-backend-60mu.onrender.com
+  API_BASE_URL: process.env.REACT_APP_API_BASE_URL,
 };
 
 const config = {
-  // Add common config values here
+  // common config values
   MAX_ATTACHMENT_SIZE: 5000000,
-  // Default to dev if not set
-  ...(process.env.REACT_APP_ENV === 'production' ? prod : local),
+  // choose between local/prod
+  ...(process.env.REACT_APP_ENV === "production" ? prod : local),
 };
 
 export default config;
