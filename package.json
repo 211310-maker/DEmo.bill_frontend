@@ -17,7 +17,7 @@
   },
   "scripts": {
     "start": "react-scripts start",
-    "build": "react-scripts build",
+    "build": "NODE_OPTIONS=--openssl-legacy-provider react-scripts build",
     "local": "env-cmd -f .env.local react-scripts start",
     "build:local": "env-cmd -f .env.local react-scripts build && mv build ../public",
     "build:prod": "env-cmd -f .env.production react-scripts build && mv build ../public"
