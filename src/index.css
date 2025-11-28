@@ -537,3 +537,14 @@ form select {
 .no-capital-input {
   text-transform: none;
 }
+
+.qr-cell {
+  display: flex;
+  justify-content: center;
+}
+
+.qr-image {
+  height: 80px;
+  width: 80px;
+  object-fit: contain;
+}

@@ -4,6 +4,32 @@ import { LOCAL_STORAGE_KEY } from "../constants";
 
 const BASE_URL = config["API_BASE_URL"];
 
+const normalizeBill = (bill) => {
+  if (!bill) return bill;
+
+  return {
+    ...bill,
+    qrCode: bill.qrCode || bill.qr_image || bill.qr,
+    qrUrl: bill.qrUrl || bill.qr_link || bill.qrLink,
+  };
+};
+
+const normalizeBillPayload = (payload) => {
+  if (!payload) return payload;
+
+  const normalizedPayload = { ...payload };
+
+  if (Array.isArray(payload.bills)) {
+    normalizedPayload.bills = payload.bills.map(normalizeBill);
+  }
+
+  if (payload.bill) {
+    normalizedPayload.bill = normalizeBill(payload.bill);
+  }
+
+  return normalizedPayload;
+};
+
 export const Urls = {
   login: BASE_URL + "/auth/login",
   getAcess: BASE_URL + "/auth/get-access",
@@ -42,7 +68,7 @@ export const getDetailsApi = async (payLoad) => {
         },
       }
     );
-    return { data, error: null };
+    return { data: normalizeBillPayload(data), error: null };
   } catch (error) {
     return { data: null, error: safeError(error) };
   }
@@ -58,7 +84,7 @@ export const getAllBillsApi = async (filter) => {
         "x-auth-token": user?.token,
       },
     });
-    return { data, error: null };
+    return { data: normalizeBillPayload(data), error: null };
   } catch (error) {
     return { data: null, error: safeError(error) };
   }
@@ -88,7 +114,7 @@ export const createBillApi = async (payLoad) => {
         "x-auth-token": user?.token,
       },
     });
-    return { data, error: null };
+    return { data: normalizeBillPayload(data), error: null };
   } catch (error) {
     return { data: null, error: safeError(error) };
   }
