@@ -12,11 +12,15 @@ const Admin = () => {
   const [username, setUsername] = useState('');
   const [tempUserId, setTempUserId] = useState('');
   const [accessState, setAccessState] = useState([]);
+  const [successMessage, setSuccessMessage] = useState('');
+  const [errorMessage, setErrorMessage] = useState('');
   const [creds, setCreds] = useState({
     username: '',
     password: '',
   });
   const createNewTempUserHandler = async () => {
+    setSuccessMessage('');
+    setErrorMessage('');
     setIsLoading(true);
     const { data, error } = await createTempUserApi();
     setIsLoading(false);
@@ -31,18 +35,28 @@ const Admin = () => {
         });
         setOtp('');
         setPassword('');
+        setErrorMessage('');
+        setSuccessMessage('Access link generated.');
+      } else {
+        setErrorMessage(data.message || 'Unable to generate access link.');
       }
     } else {
-      alert(error.message);
+      setErrorMessage(error.message || 'Unable to generate access link.');
     }
   };
 
   const provideAccessHandler = async () => {
-    setIsLoading(true);
     if (!otp || !password || !username) {
-      alert('Please fill all fields');
+      setErrorMessage('Please fill all fields before submitting.');
       return;
     }
+    if (!tempUserId) {
+      setErrorMessage('Please generate an access link before submitting the OTP.');
+      return;
+    }
+    setIsLoading(true);
+    setErrorMessage('');
+    setSuccessMessage('');
     const { data, error } = await provideAccessApi({
       otp,
       password,
@@ -63,9 +77,14 @@ const Admin = () => {
         setPassword('');
         setUsername('');
         setAccessState([]);
+        setSuccessMessage('User created successfully.');
+      } else {
+        setErrorMessage(data.message || 'Unable to create user. Please try again.');
       }
+    } else if (error) {
+      setErrorMessage(error.message || 'Unable to create user. Please try again.');
     } else {
-      alert(error.message);
+      setErrorMessage('Unable to create user. Please try again.');
     }
   };
 
@@ -126,6 +145,12 @@ const Admin = () => {
             </button>
           </div>
         )}
+        {errorMessage && (
+          <p className='text-danger font-weight-bold mt-3'>{errorMessage}</p>
+        )}
+        {successMessage && (
+          <p className='text-success font-weight-bold mt-3'>{successMessage}</p>
+        )}
         <hr />
         <div className='text-center'>
           <p className='login-heading mt-4'>
@@ -175,7 +200,7 @@ const Admin = () => {
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             className='form__input w-100'
-            type='text'
+            type='password'
             id='password'
             name='password'
           />
@@ -194,7 +219,11 @@ const Admin = () => {
           />
         </div>
         <br />
-        <button onClick={provideAccessHandler} className='btn-success'>
+        <button
+          disabled={isLoading}
+          onClick={provideAccessHandler}
+          className='btn-success'
+        >
           provide access
         </button>
 

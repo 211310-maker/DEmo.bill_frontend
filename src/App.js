@@ -100,7 +100,7 @@ function App() {
             component={ConfirmPayment}
           />
 
-          <Route exact path="/register/:token/get-access" component={GetAccess} />
+          <Route exact path="/register/:id/get-access" component={GetAccess} />
 
           {/* 404 fallback */}
           <Route component={NotFound} />
