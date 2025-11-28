@@ -23,21 +23,23 @@ const Login = () => {
     const { data, error } = await loginApi({ username, password });
     setIsLoading(false);
 
-    if (data) {
-      if (data.success && data.user && data.token) {
-        localStorage.setItem(
-          LOCAL_STORAGE_KEY,
-          JSON.stringify({ ...data.user, token: data.token })
-        );
-        setUsername('');
-        setPassword('');
-        history.push('/');
-      } else {
-        alert(data.message || "Invalid credentials");
-      }
-    } else {
+    if (error) {
       alert(error?.message || "Something went wrong");
+      return;
     }
+
+    if (data?.success) {
+      localStorage.setItem(
+        LOCAL_STORAGE_KEY,
+        JSON.stringify({ token: data.token, ...data.user })
+      );
+      setUsername('');
+      setPassword('');
+      history.push('/');
+      return;
+    }
+
+    alert(data?.message || "Invalid credentials");
   };
 
   return (
