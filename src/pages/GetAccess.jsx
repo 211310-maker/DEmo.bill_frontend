@@ -1,58 +1,44 @@
-import React, { useEffect, useState } from 'react';
-import { useHistory, useParams } from 'react-router-dom';
-import { useCookies } from 'react-cookie';
-import { getAcessApi } from '../utils/api';
-import { LOCAL_STORAGE_KEY } from '../constants';
+import React, { useEffect, useMemo, useState } from 'react';
+import { useParams } from 'react-router-dom';
 import copy from 'copy-to-clipboard';
+import { getAcessApi } from '../utils/api';
 
 const GetAccess = () => {
-  const history = useHistory();
-  const { token } = useParams();
+  const { id, token } = useParams();
   const [otp, setOtp] = useState('');
-  const [_, setCookie] = useCookies();
   const [isLoading, setIsLoading] = useState(false);
-  const [isInvalid, setIsInvalid] = useState(false);
-  const [success, setSuccess] = useState(false);
-  const [message, setMessage] = useState('');
+  const [errorMessage, setErrorMessage] = useState('');
+  const [statusMessage, setStatusMessage] = useState('');
+
+  const accessToken = useMemo(() => id || token, [id, token]);
 
   useEffect(() => {
-    if (!token) {
-      setIsInvalid(true);
-      setMessage('Missing access token.');
+    if (!accessToken) {
+      setErrorMessage('Missing access token.');
       return;
     }
 
     const onGetAccessHandler = async () => {
       setIsLoading(true);
-      const { data } = await getAcessApi(token);
+      setErrorMessage('');
+      setStatusMessage('');
 
-      if (data && data.success) {
-        if (data.user) {
-          localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(data.user));
-          setSuccess(true);
-          setMessage('Access granted. Redirecting you to the dashboard...');
-          setTimeout(() => history.push('/'), 1200);
-        } else if (data.pageAccessToken && data.otp) {
-          setCookie('pageAccessToken', data.pageAccessToken, { path: '/' });
-          setOtp(data.otp);
-          setSuccess(true);
-          setMessage(
-            'Access code generated. Please share the code with the admin to complete setup.'
-          );
-        } else {
-          setIsInvalid(true);
-          setMessage(data.message || 'Unable to process access link.');
-        }
+      const { data, error } = await getAcessApi(accessToken);
+
+      if (data?.success && data?.otp) {
+        setOtp(data.otp);
+        setStatusMessage('Share this OTP with the admin to complete user creation.');
       } else {
-        setIsInvalid(true);
-        setMessage(data?.message || 'Link expired or invalid.');
+        setErrorMessage(
+          data?.message || error?.message || 'Unable to process access link. Please try again.'
+        );
       }
 
       setIsLoading(false);
     };
 
     onGetAccessHandler();
-  }, [history, setCookie, token]);
+  }, [accessToken]);
 
   const onCopyHandler = (text) => {
     if (text) {
@@ -61,75 +47,46 @@ const GetAccess = () => {
   };
 
   return (
-    <div>
-      <br />
-      <br />
-      <br />
-      <div className='container'>
-        {isLoading && <></>}
-        {message && (
-          <p className='text-center text-info'>
-            <b>{message}</b>
-          </p>
+    <div className='container'>
+      <div className='text-center mt-5 pt-4'>
+        <h3>Get Access</h3>
+        {statusMessage && (
+          <p className='text-info font-weight-bold mt-3'>{statusMessage}</p>
         )}
-        {!isLoading && !isInvalid && success && otp && (
-          <>
-            <br />
-            <br />
-            <p className='text-info text-center'>
-              <b>
-                <span className='text-danger mr-3'>
-                  <u>Note</u>
-                  <sup>*</sup>
-                </span>{' '}
-                Please copy the access code & send to the admin.
-              </b>
-            </p>
-          </>
-        )}
-        {!isLoading && !isInvalid && otp && (
-          <>
-            <br />
-            <h4 className='text-center'>
-              <span className='text-danger'>ACCESS CODE </span> : {otp}{' '}
-              <button
-                onClick={() => onCopyHandler(otp)}
-                data-toggle='tooltip'
-                data-placement='top'
-                title='Copy otp'
-                className='btn btn-sm ml-3'
-              >
-                <svg
-                  width='24'
-                  height='24'
-                  fill='none'
-                  xmlns='http://www.w3.org/2000/svg'
-                >
-                  <path
-                    fill-rule='evenodd'
-                    clip-rule='evenodd'
-                    d='M2 9a7 7 0 0 1 7-7h8a1 1 0 1 1 0 2H9a5 5 0 0 0-5 5v8a1 1 0 1 1-2 0V9z'
-                    fill='#0C6090'
-                  />
-                  <path
-                    fill-rule='evenodd'
-                    clip-rule='evenodd'
-                    d='M6 11a5 5 0 0 1 5-5h6a5 5 0 0 1 5 5v6a5 5 0 0 1-5 5h-6a5 5 0 0 1-5-5v-6zm5-3a3 3 0 0 0-3 3v6a3 3 0 0 0 3 3h6a3 3 0 0 0 3-3v-6a3 3 0 0 0-3-3h-6z'
-                    fill='#0C6090'
-                  />
-                </svg>
-              </button>
-            </h4>
-          </>
-        )}
-        {!isLoading && isInvalid && (
-          <>
-            <br />
-            <br />
-            <h4 className='text-center'>Link Expired</h4>
-          </>
-        )}
+        {errorMessage && <p className='text-danger font-weight-bold mt-3'>{errorMessage}</p>}
+        {isLoading && <p className='mt-3'>Generating OTP...</p>}
       </div>
+
+      {!isLoading && otp && (
+        <div className='text-center mt-4'>
+          <p className='text-info'>Provide this code to the admin handling your account.</p>
+          <h4 className='text-center'>
+            <span className='text-danger'>ACCESS CODE</span> : {otp}{' '}
+            <button
+              onClick={() => onCopyHandler(otp)}
+              data-toggle='tooltip'
+              data-placement='top'
+              title='Copy otp'
+              className='btn btn-sm ml-3'
+            >
+              <svg width='24' height='24' fill='none' xmlns='http://www.w3.org/2000/svg'>
+                <path
+                  fillRule='evenodd'
+                  clipRule='evenodd'
+                  d='M2 9a7 7 0 0 1 7-7h8a1 1 0 1 1 0 2H9a5 5 0 0 0-5 5v8a1 1 0 1 1-2 0V9z'
+                  fill='#0C6090'
+                />
+                <path
+                  fillRule='evenodd'
+                  clipRule='evenodd'
+                  d='M6 11a5 5 0 0 1 5-5h6a5 5 0 0 1 5 5v6a5 5 0 0 1-5 5h-6a5 5 0 0 1-5-5v-6zm5-3a3 3 0 0 0-3 3v6a3 3 0 0 0 3 3h6a3 3 0 0 0 3-3v-6a3 3 0 0 0-3-3h-6z'
+                  fill='#0C6090'
+                />
+              </svg>
+            </button>
+          </h4>
+        </div>
+      )}
     </div>
   );
 };
