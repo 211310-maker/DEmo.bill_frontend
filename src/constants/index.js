@@ -5,12 +5,6 @@ export const fields = {
     cg: "CHHATTISGARH",
     gujrat: "GUJRAT",
     haryana: "HARYANA",
-    telangana: "TELANGANA",
-    assam: "ASSAM",
-    puducherry: "PUDUCHERRY",
-    damandiu: "DAMAN & DIU",
-    sikkim: "SIKKIM",
-    tripura: "TRIPURA",
     hp: "HIMACHAL PRADESH",
     jh: "JHARKHAND",
     ka: "KARNATAKA",
@@ -63,12 +57,6 @@ export const fields = {
       label: "ODISHA",
     },
     { name: "PUNJAB", code: "pb", value: "punjab", label: "PUNJAB" },
-    { name: "TELANGANA", code: "ts", value: "telangana", label: "TELANGANA" },
-    { name: "ASSAM", code: "as", value: "assam", label: "ASSAM" },
-    { name: "PUDUCHERRY", code: "py", value: "puducherry", label: "PUDUCHERRY" },
-    { name: "DAMAN & DIU", code: "dd", value: "damandiu", label: "DAMAN & DIU" },
-    { name: "SIKKIM", code: "sk", value: "sikkim", label: "SIKKIM" },
-    { name: "TRIPURA", code: "tr", value: "tripura", label: "TRIPURA" },
     { name: "RAJASTHAN", code: "rj", value: "rajasthan", label: "RAJASTHAN" },
     { name: "TAMILNADU", code: "tn", value: "tamilnadu", label: "TAMILNADU" },
     { name: "UTTAR PRADESH", code: "up", value: "up", label: "UTTAR PRADESH" },
@@ -1179,10 +1167,3 @@ export const fields = {
     ],
   },
 };
-
-fields.telangana = fields.punjab;
-fields.assam = fields.punjab;
-fields.puducherry = fields.punjab;
-fields.damandiu = fields.punjab;
-fields.sikkim = fields.punjab;
-fields.tripura = fields.punjab;
