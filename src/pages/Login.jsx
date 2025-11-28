@@ -24,8 +24,11 @@ const Login = () => {
     setIsLoading(false);
 
     if (data) {
-      if (data.success) {
-        localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(data.user));
+      if (data.success && data.user && data.token) {
+        localStorage.setItem(
+          LOCAL_STORAGE_KEY,
+          JSON.stringify({ ...data.user, token: data.token })
+        );
         setUsername('');
         setPassword('');
         history.push('/');

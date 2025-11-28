@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useHistory, useLocation } from 'react-router';
 import SbiLogo from '../assets/SBI_LOGO.png';
 import veriSign from '../assets/VERISIGN.png';
-import { createBillApi } from '../utils/api';
+import { createBillApi, downloadBillApi } from '../utils/api';
 
 const ConfirmPayment = () => {
   const history = useHistory();
@@ -10,6 +10,8 @@ const ConfirmPayment = () => {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [createdBill, setCreatedBill] = useState(null);
+  const [downloadLoading, setDownloadLoading] = useState(false);
 
   const onResetHandler = () => {
     setUsername('');
@@ -29,13 +31,37 @@ const ConfirmPayment = () => {
     });
     if (data) {
       if (data.success) {
-        history.replace('/');
-        window.open(`${data.pdfUrl}`, '_blank');
+        setCreatedBill(data.bill || data.createdBill || null);
+        alert('Payment successful. You can download your receipt now.');
+      } else {
+        alert(data.message || 'Unable to create bill.');
       }
     } else {
       alert(error.message);
     }
     setIsLoading(false);
+  };
+
+  const onDownloadHandler = async () => {
+    if (!createdBill?._id) {
+      alert('No bill found to download.');
+      return;
+    }
+    setDownloadLoading(true);
+    const { data, error } = await downloadBillApi(createdBill._id);
+    setDownloadLoading(false);
+
+    if (data) {
+      const downloadUrl = window.URL.createObjectURL(new Blob([data]));
+      const link = document.createElement('a');
+      link.href = downloadUrl;
+      link.setAttribute('download', `bill-${createdBill._id}.pdf`);
+      document.body.appendChild(link);
+      link.click();
+      link.parentNode.removeChild(link);
+    } else {
+      alert(error?.message || 'Unable to download bill.');
+    }
   };
 
   useEffect(() => {
@@ -111,6 +137,18 @@ const ConfirmPayment = () => {
                   Reset
                 </button>
               </div>
+              {createdBill && (
+                <div className='text-center pl-4 mt-3'>
+                  <button
+                    disabled={downloadLoading}
+                    type='button'
+                    className='btn-primary'
+                    onClick={onDownloadHandler}
+                  >
+                    {downloadLoading ? 'Preparing...' : 'Download Bill'}
+                  </button>
+                </div>
+              )}
 
               <div className='text-center mt-4'>
                 <a href=''>FAQ</a> <span className='mx-2'>|</span>
