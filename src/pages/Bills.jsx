@@ -6,6 +6,37 @@ import { formatDate } from '../utils/helper';
 import { fields, LOCAL_STORAGE_KEY } from '../constants';
 import config from '../config/env';
 const BASE_URL = config['API_BASE_URL'];
+
+const isImageLike = (qrValue) => {
+  if (!qrValue) return false;
+
+  const qrString = String(qrValue);
+
+  return (
+    qrString.startsWith('data:image') ||
+    /\.(png|jpe?g|gif|svg)$/i.test(qrString.split('?')[0])
+  );
+};
+
+const getQrSource = (bill) => {
+  if (!bill) return null;
+
+  const qrValue = bill.qrCode || bill.qrUrl;
+
+  if (!qrValue) return null;
+
+  const qrString = String(qrValue);
+
+  if (isImageLike(qrString)) {
+    return { src: qrString, value: qrString };
+  }
+
+  const generatedQrSrc = `https://api.qrserver.com/v1/create-qr-code/?size=120x120&data=${encodeURIComponent(
+    qrString
+  )}`;
+
+  return { src: generatedQrSrc, value: qrString };
+};
 const Bills = () => {
   const isLoggedIn = JSON.parse(localStorage.getItem(LOCAL_STORAGE_KEY));
   const [filter, setFilter] = useState({
@@ -139,6 +170,7 @@ const Bills = () => {
               <thead className='thead-light'>
                 <tr>
                   <th scope='col'>Receipt No</th>
+                  <th scope='col'>QR Code</th>
                   <th scope='col'>Vehicle Category</th>
                   <th scope='col'>Regis No.</th>
                   <th scope='col'>Name</th>
@@ -156,12 +188,13 @@ const Bills = () => {
               <tbody>
                 {bills.length == 0 && (
                   <tr>
-                    <td className='text-center' colSpan='12'>
+                    <td className='text-center' colSpan='13'>
                       <h3>No data</h3>
                     </td>
                   </tr>
                 )}
                 {bills.map((bill, i) => {
+                  const qrInfo = getQrSource(bill);
                   return (
                     <tr key={bill._id}>
                       <td>
@@ -171,6 +204,19 @@ const Bills = () => {
                         >
                           {bill.receiptNo}
                         </a>
+                      </td>
+                      <td>
+                        {qrInfo ? (
+                          <div className='qr-cell'>
+                            <img
+                              src={qrInfo.src}
+                              alt='Bill QR'
+                              className='qr-image'
+                            />
+                          </div>
+                        ) : (
+                          '-'
+                        )}
                       </td>
                       <td scope='row'>{bill.vehicleClass}</td>
                       <td>{bill.vehicleNo}</td>
