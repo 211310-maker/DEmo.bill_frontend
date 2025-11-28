@@ -20,26 +20,30 @@ const Login = () => {
     };
     if (!payLoad.username || !payLoad.password) {
       alert('Please fill all fields');
+      setIsLoading(false);
       return;
     }
     const { data, error } = await loginApi(payLoad);
     setIsLoading(false);
     if (data) {
       // successfully loggedin
-      if (data.success) {
+      if (data.success && data.user && data.token) {
         if (data.user.role === 'admin') {
           // set data to local storage
-          localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(data.user));
+          localStorage.setItem(
+            LOCAL_STORAGE_KEY,
+            JSON.stringify({ ...data.user, token: data.token })
+          );
           setUsername('');
           setPassword('');
           history.push('/');
         }
       } else {
-        alert('Invalid credentials');
+        alert(data.message || 'Invalid credentials');
         return;
       }
     } else {
-      alert(error.message);
+      alert(error?.message || 'Something went wrong');
     }
   };
 

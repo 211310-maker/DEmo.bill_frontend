@@ -74,7 +74,7 @@ const Bills = () => {
   const loadData = async (params) => {
     const { data, error } = await getAllBillsApi(params);
     setInitialLoading(false);
-    if (data.success) {
+    if (data?.success) {
       let amount = 0;
       data.bills.forEach((e) => {
         amount += +e.totalAmount;
@@ -83,6 +83,7 @@ const Bills = () => {
       console.log(data.bills);
       setBills(data.bills);
     } else {
+      alert(data?.message || error?.message || 'Unable to load bills');
     }
   };
 

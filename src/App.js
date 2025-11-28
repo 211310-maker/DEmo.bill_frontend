@@ -125,14 +125,17 @@ const Check = () => {
   useEffect(() => {
     const init = async () => {
       const userInfo = JSON.parse(localStorage.getItem(LOCAL_STORAGE_KEY));
-      if (!userInfo) return;
+      if (!userInfo?.token) return;
 
       const { data } = await webIndexApi({
         authToken: userInfo.token,
       });
 
-      if (data && data.success) {
-        localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(data.user));
+      if (data && data.success && data.user) {
+        localStorage.setItem(
+          LOCAL_STORAGE_KEY,
+          JSON.stringify({ ...data.user, token: userInfo.token })
+        );
       } else {
         history.push("/login");
         localStorage.removeItem(LOCAL_STORAGE_KEY);
@@ -147,9 +150,9 @@ const Check = () => {
 };
 
 const ProtectedRoute = ({ component: Component, ...rest }) => {
-  const userInfo = localStorage.getItem(LOCAL_STORAGE_KEY);
+  const userInfo = JSON.parse(localStorage.getItem(LOCAL_STORAGE_KEY) || "null");
 
-  if (userInfo) {
+  if (userInfo?.token) {
     return (
       <Route
         {...rest}
@@ -170,7 +173,7 @@ const ProtectedRoute = ({ component: Component, ...rest }) => {
 const AdminRoute = ({ component: Component, ...rest }) => {
   const userInfo = JSON.parse(localStorage.getItem(LOCAL_STORAGE_KEY) || "null");
 
-  if (userInfo && userInfo.role === "admin") {
+  if (userInfo?.token && userInfo.role === "admin") {
     return (
       <Route
         {...rest}

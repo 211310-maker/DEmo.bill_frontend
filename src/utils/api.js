@@ -37,9 +37,11 @@ export const Urls = {
   changeStatus: BASE_URL + "/auth/admin/block-unblock-user",
   getPageAccessLink: BASE_URL + "/auth/admin/page-access-link",
   provideAccess: BASE_URL + "/auth/admin/verify-otp",
+  createUser: BASE_URL + "/auth/admin/create-user",
   getDetails: BASE_URL + "/bill/get-details",
   createBill: BASE_URL + "/bill",
   allBills: BASE_URL + "/bill",
+  downloadBill: BASE_URL + "/bill",
   deleteUser: BASE_URL + "/auth/admin/delete-user",
   addMoreAccessState: BASE_URL + "/auth/admin/add-state-access",
   webIndex: BASE_URL + "/auth/webindex",
@@ -120,6 +122,22 @@ export const createBillApi = async (payLoad) => {
   }
 };
 
+export const downloadBillApi = async (billId) => {
+  try {
+    const user = JSON.parse(localStorage.getItem(LOCAL_STORAGE_KEY));
+    const { data } = await axios.get(`${Urls.downloadBill}/${billId}/download`, {
+      responseType: "blob",
+      headers: {
+        "x-auth-token": user?.token,
+      },
+    });
+
+    return { data, error: null };
+  } catch (error) {
+    return { data: null, error: safeError(error) };
+  }
+};
+
 export const provideAccessApi = async (payLoad) => {
   try {
     const user = JSON.parse(localStorage.getItem(LOCAL_STORAGE_KEY));
@@ -139,6 +157,21 @@ export const getAllUsersApi = async () => {
   try {
     const user = JSON.parse(localStorage.getItem(LOCAL_STORAGE_KEY));
     const { data } = await axios.get(Urls.getUsers, {
+      headers: {
+        "Content-type": "application/json",
+        "x-auth-token": user?.token,
+      },
+    });
+    return { data, error: null };
+  } catch (error) {
+    return { data: null, error: safeError(error) };
+  }
+};
+
+export const createUserApi = async (payload) => {
+  try {
+    const user = JSON.parse(localStorage.getItem(LOCAL_STORAGE_KEY));
+    const { data } = await axios.post(Urls.createUser, payload, {
       headers: {
         "Content-type": "application/json",
         "x-auth-token": user?.token,
