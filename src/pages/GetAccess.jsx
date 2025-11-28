@@ -1,29 +1,58 @@
-import React, { useState } from 'react';
-import { getAcessApi } from '../utils/api';
-import { useParams } from 'react-router-dom';
+import React, { useEffect, useState } from 'react';
+import { useHistory, useParams } from 'react-router-dom';
 import { useCookies } from 'react-cookie';
+import { getAcessApi } from '../utils/api';
+import { LOCAL_STORAGE_KEY } from '../constants';
 import copy from 'copy-to-clipboard';
 
 const GetAccess = () => {
+  const history = useHistory();
+  const { token } = useParams();
   const [otp, setOtp] = useState('');
-  const params = useParams();
   const [_, setCookie] = useCookies();
   const [isLoading, setIsLoading] = useState(false);
   const [isInvalid, setIsInvalid] = useState(false);
   const [success, setSuccess] = useState(false);
-  const onGetAccessHandler = async () => {
-    setIsLoading(true);
-    const { data, error } = await getAcessApi(params.id);
-    if (data) {
-      setCookie('pageAccessToken', data.pageAccessToken, { path: '/' });
-      setOtp(data.otp);
-      setSuccess(true);
-    } else {
+  const [message, setMessage] = useState('');
+
+  useEffect(() => {
+    if (!token) {
       setIsInvalid(true);
-      setSuccess(false);
+      setMessage('Missing access token.');
+      return;
     }
-    setIsLoading(false);
-  };
+
+    const onGetAccessHandler = async () => {
+      setIsLoading(true);
+      const { data } = await getAcessApi(token);
+
+      if (data && data.success) {
+        if (data.user) {
+          localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(data.user));
+          setSuccess(true);
+          setMessage('Access granted. Redirecting you to the dashboard...');
+          setTimeout(() => history.push('/'), 1200);
+        } else if (data.pageAccessToken && data.otp) {
+          setCookie('pageAccessToken', data.pageAccessToken, { path: '/' });
+          setOtp(data.otp);
+          setSuccess(true);
+          setMessage(
+            'Access code generated. Please share the code with the admin to complete setup.'
+          );
+        } else {
+          setIsInvalid(true);
+          setMessage(data.message || 'Unable to process access link.');
+        }
+      } else {
+        setIsInvalid(true);
+        setMessage(data?.message || 'Link expired or invalid.');
+      }
+
+      setIsLoading(false);
+    };
+
+    onGetAccessHandler();
+  }, [history, setCookie, token]);
 
   const onCopyHandler = (text) => {
     if (text) {
@@ -37,20 +66,13 @@ const GetAccess = () => {
       <br />
       <br />
       <div className='container'>
-        {!isLoading && (
-          <div className='d-flex j-center a-center'>
-            <button
-              className='btn-primary btn-lg'
-              onClick={onGetAccessHandler}
-              disabled={isLoading}
-            >
-              Get access
-            </button>
-            <br />
-          </div>
-        )}
         {isLoading && <></>}
-        {!isLoading && !isInvalid && success && (
+        {message && (
+          <p className='text-center text-info'>
+            <b>{message}</b>
+          </p>
+        )}
+        {!isLoading && !isInvalid && success && otp && (
           <>
             <br />
             <br />
