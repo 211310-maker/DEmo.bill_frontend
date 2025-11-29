@@ -1,8 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import LoginHeader from '../components/LoginHeader';
 import { loginApi } from '../utils/api';
-import { LOCAL_STORAGE_KEY } from '../constants';
 import { useHistory } from 'react-router';
+import { getStoredToken, getStoredUser, saveSession } from '../utils/auth';
 
 const Login = () => {
   const history = useHistory();
@@ -30,10 +30,7 @@ const Login = () => {
       if (data.success && data.user && data.token) {
         if (data.user.role === 'admin') {
           // set data to local storage
-          localStorage.setItem(
-            LOCAL_STORAGE_KEY,
-            JSON.stringify({ ...data.user, token: data.token })
-          );
+          saveSession(data.token, data.user);
           setUsername('');
           setPassword('');
           history.push('/');
@@ -48,12 +45,12 @@ const Login = () => {
   };
 
   useEffect(() => {
-    const userInfo = localStorage.getItem(LOCAL_STORAGE_KEY);
-    console.log(userInfo);
-    if (userInfo) {
+    const userInfo = getStoredUser();
+    const token = getStoredToken();
+    if (userInfo && token) {
       history.push('/');
     }
-  }, []);
+  }, [history]);
 
   return (
     <>

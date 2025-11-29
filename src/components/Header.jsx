@@ -3,19 +3,21 @@ import checkpost from '../assets/checkpost-logo.png';
 import emblemLogo from '../assets/emblem-logo.png';
 import eVahanLogo from '../assets/e-vahan-logo.png';
 import { Link } from 'react-router-dom';
-import { LOCAL_STORAGE_KEY } from '../constants';
 import { useHistory } from 'react-router-dom';
+import { clearSession, getStoredUser } from '../utils/auth';
 const Header = () => {
   const history = useHistory();
-  const isLoggedIn = JSON.parse(localStorage.getItem(LOCAL_STORAGE_KEY));
-  const onLogoutHandler = (e) => {
-    if (isLoggedIn.role === 'admin') {
-      localStorage.clear(LOCAL_STORAGE_KEY);
+  const isLoggedIn = getStoredUser();
+  const onLogoutHandler = () => {
+    clearSession();
+    localStorage.clear();
+
+    if (isLoggedIn?.role === 'admin') {
       history.push('/admin/login');
-    } else {
-      localStorage.clear(LOCAL_STORAGE_KEY);
-      history.push('/login');
+      return;
     }
+
+    history.push('/login');
   };
   return (
     <header className='header'>
@@ -132,7 +134,7 @@ const Header = () => {
                   </Link>
                 </div>
               </li> */}
-              {isLoggedIn.role === 'admin' && (
+              {isLoggedIn?.role === 'admin' && (
                 <li className='nav-item dropdown'>
                   <a
                     className='nav-link dropdown-toggle text-white'

@@ -1,4 +1,7 @@
-export const LOCAL_STORAGE_KEY = "user@bill";
+export const TOKEN_KEY = "token";
+export const USER_KEY = "user";
+export const APP_BASENAME = "/app";
+export const LOCAL_STORAGE_KEY = USER_KEY;
 export const fields = {
   stateName: {
     bihar: "BIHAR",
@@ -17,6 +20,12 @@ export const fields = {
     tn: "TAMILNADU",
     up: "UTTAR PRADESH",
     uk: "UTTARAKHAND",
+    telangana: "TELANGANA",
+    assam: "ASSAM",
+    puducherry: "PUDUCHERRY",
+    damanDiu: "DAMAN & DIU",
+    sikkim: "SIKKIM",
+    tripura: "TRIPURA",
   },
 
   allState: [
@@ -24,24 +33,24 @@ export const fields = {
     {
       name: "CHHATTISGARH",
       code: "cg",
-      value: "Chhattisgarh",
+      value: "chhattisgarh",
       label: "CHHATTISGARH",
     },
-    { name: "GUJRAT", code: "gj", value: "	gujrat", label: "GUJRAT" },
+    { name: "GUJRAT", code: "gj", value: "gujrat", label: "GUJRAT" },
     { name: "HARYANA", code: "hr", value: "haryana", label: "HARYANA" },
     {
       name: "HIMACHAL PRADESH",
       code: "hp",
-      value: "himachalPradesh	",
-      label: "",
+      value: "himachalPradesh",
+      label: "HIMACHAL PRADESH",
     },
-    { name: "JHARKHAND", code: "jh", value: "Jharkhand", label: "JHARKHAND" },
+    { name: "JHARKHAND", code: "jh", value: "jharkhand", label: "JHARKHAND" },
     { name: "KARNATAKA", code: "ka", value: "karnataka", label: "KARNATAKA" },
-    { name: "KERALA", code: "kl", value: "Kerala", label: "KERALA" },
+    { name: "KERALA", code: "kl", value: "kerela", label: "KERALA" },
     {
       name: "MADHYA PRADESH",
       code: "mp",
-      value: "madhyaPradesh",
+      value: "mp",
       label: "MADHYA PRADESH",
     },
     {
@@ -61,6 +70,12 @@ export const fields = {
     { name: "TAMILNADU", code: "tn", value: "tamilnadu", label: "TAMILNADU" },
     { name: "UTTAR PRADESH", code: "up", value: "up", label: "UTTAR PRADESH" },
     { name: "UTTARAKHAND", code: "uk", value: "uk", label: "UTTARAKHAND" },
+    { name: "TELANGANA", code: "ts", value: "telangana", label: "TELANGANA" },
+    { name: "ASSAM", code: "as", value: "assam", label: "ASSAM" },
+    { name: "PUDUCHERRY", code: "py", value: "puducherry", label: "PUDUCHERRY" },
+    { name: "DAMAN & DIU", code: "dd", value: "damanDiu", label: "DAMAN & DIU" },
+    { name: "SIKKIM", code: "sk", value: "sikkim", label: "SIKKIM" },
+    { name: "TRIPURA", code: "tr", value: "tripura", label: "TRIPURA" },
   ],
   fromState: [
     {
