@@ -38,6 +38,7 @@ export const Urls = {
   provideAccess: BASE_URL + "/auth/admin/verify-otp",
   getUsers: BASE_URL + "/auth/admin/get-users",
   changeStatus: BASE_URL + "/auth/admin/block-unblock-user",
+  createUser: BASE_URL + "/auth/admin/create-user",
   addMoreAccessState: BASE_URL + "/auth/admin/add-state-access",
   deleteUser: BASE_URL + "/auth/admin/delete-user",
   getDetails: BASE_URL + "/bill/get-details",
@@ -111,6 +112,17 @@ export const provideAccessApi = async (payLoad) => {
 export const getAllUsersApi = async () => {
   try {
     const { data } = await axios.get(Urls.getUsers, {
+      headers: getAuthHeaders(),
+    });
+    return { data, error: null };
+  } catch (error) {
+    return { data: null, error: safeError(error) };
+  }
+};
+
+export const createUserApi = async (payload) => {
+  try {
+    const { data } = await axios.post(Urls.createUser, payload, {
       headers: getAuthHeaders(),
     });
     return { data, error: null };
