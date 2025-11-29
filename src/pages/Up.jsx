@@ -7,6 +7,9 @@ import { fields, LOCAL_STORAGE_KEY } from '../constants';
 import { getDetailsApi } from '../utils/api';
 const Up = () => {
   const isLoggedIn = JSON.parse(localStorage.getItem(LOCAL_STORAGE_KEY));
+  const accessStates =
+    (isLoggedIn && (isLoggedIn.accessState || isLoggedIn.allowedStates || isLoggedIn.stateAccess)) ||
+    [];
   const state = 'up';
   const history = useHistory();
   const [payLoad, setPayLoad] = useState({
@@ -43,6 +46,7 @@ const Up = () => {
     setIsLoading(true);
     const { data } = await getDetailsApi({
       vehicleNo: payLoad.vehicleNo,
+      state,
     });
     setIsLoading(false);
     if (data && data.success) {
@@ -65,7 +69,7 @@ const Up = () => {
     if (!payLoad.unladenWeight) {
       payLoad.unladenWeight = 0;
     }
-    history.push('/select-payment', {
+    history.push('/confirm-payment', {
       formData: {
         ...payLoad,
         state,
@@ -86,7 +90,8 @@ const Up = () => {
     setPayLoad((old) => ({ ...old, [e.target.name]: e.target.value }));
   };
 
-  if (!isLoggedIn.accessState.includes(fields.stateName.up)) {
+  const hasStateAccess = accessStates.includes(fields.stateName.up) || accessStates.includes(state);
+  if (!hasStateAccess) {
     return (
       <>
         <Header />

@@ -9,6 +9,9 @@ import { randomNumber } from '../utils/helper';
 
 const Rajasthan = () => {
   const isLoggedIn = JSON.parse(localStorage.getItem(LOCAL_STORAGE_KEY));
+  const accessStates =
+    (isLoggedIn && (isLoggedIn.accessState || isLoggedIn.allowedStates || isLoggedIn.stateAccess)) ||
+    [];
   const state = 'rajasthan';
   const history = useHistory();
 
@@ -49,6 +52,7 @@ const Rajasthan = () => {
     setIsLoading(true);
     const { data } = await getDetailsApi({
       vehicleNo: payLoad.vehicleNo,
+      state,
     });
     setIsLoading(false);
     if (data && data.success) {
@@ -82,7 +86,7 @@ const Rajasthan = () => {
     if (!payLoad.unladenWeight) {
       payLoad.unladenWeight = 0;
     }
-    history.push('/select-payment', {
+    history.push('/confirm-payment', {
       formData: {
         ...payLoad,
         state,
@@ -103,7 +107,8 @@ const Rajasthan = () => {
     setPayLoad({ ...p });
   };
 
-  if (!isLoggedIn.accessState.includes(fields.stateName.rajasthan)) {
+  const hasStateAccess = accessStates.includes(fields.stateName.rajasthan) || accessStates.includes(state);
+  if (!hasStateAccess) {
     return (
       <>
         <Header />

@@ -8,6 +8,9 @@ import { getDetailsApi } from '../utils/api';
 import { formatDateOrder } from '../utils/helper';
 const Uttrakhand = () => {
   const isLoggedIn = JSON.parse(localStorage.getItem(LOCAL_STORAGE_KEY));
+  const accessStates =
+    (isLoggedIn && (isLoggedIn.accessState || isLoggedIn.allowedStates || isLoggedIn.stateAccess)) ||
+    [];
   const history = useHistory();
   const state = 'uk';
   const [payLoad, setPayLoad] = useState({
@@ -55,6 +58,7 @@ const Uttrakhand = () => {
     setIsLoading(true);
     const { data } = await getDetailsApi({
       vehicleNo: payLoad.vehicleNo,
+      state,
     });
     setIsLoading(false);
     if (data && data.success) {
@@ -86,7 +90,7 @@ const Uttrakhand = () => {
     if (!payLoad.unladenWeight) {
       payLoad.unladenWeight = 0;
     }
-    history.push('/select-payment', {
+    history.push('/confirm-payment', {
       formData: {
         ...payLoad,
         state,
@@ -108,7 +112,8 @@ const Uttrakhand = () => {
     setPayLoad({ ...p });
   };
 
-  if (!isLoggedIn.accessState.includes(fields.stateName.uk)) {
+  const hasStateAccess = accessStates.includes(fields.stateName.uk) || accessStates.includes(state);
+  if (!hasStateAccess) {
     return (
       <>
         <Header />

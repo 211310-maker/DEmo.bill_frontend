@@ -24,16 +24,18 @@ const Index = () => {
   useEffect(() => {
     const isLoggedIn = JSON.parse(localStorage.getItem(LOCAL_STORAGE_KEY));
     if (isLoggedIn) {
-      const accessStates = isLoggedIn.accessState;
-      const allowedStates = fields.allState.filter((e) => {
-        return accessStates.includes(e.name);
-      });
-      if (allowedStates.length > 0) {
-        setStates(allowedStates);
+      const accessStates =
+        isLoggedIn.accessState || isLoggedIn.allowedStates || isLoggedIn.stateAccess;
+      if (Array.isArray(accessStates) && accessStates.length > 0) {
+        const allowedStates = fields.allState.filter((e) => {
+          return accessStates.includes(e.name) || accessStates.includes(e.value);
+        });
+        if (allowedStates.length > 0) {
+          setStates(allowedStates);
+          return;
+        }
       }
-      // else {
-      //   setStates(fields.allState);
-      // }
+      setStates(fields.allState);
     }
   }, []);
 

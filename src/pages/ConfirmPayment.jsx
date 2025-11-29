@@ -2,73 +2,41 @@ import React, { useEffect, useState } from 'react';
 import { useHistory, useLocation } from 'react-router';
 import SbiLogo from '../assets/SBI_LOGO.png';
 import veriSign from '../assets/VERISIGN.png';
-import { createBillApi, downloadBillApi } from '../utils/api';
+import config from '../config/env';
+import { createBillApi } from '../utils/api';
 
 const ConfirmPayment = () => {
   const history = useHistory();
   const location = useLocation();
-  const [username, setUsername] = useState('');
-  const [password, setPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [createdBill, setCreatedBill] = useState(null);
-  const [downloadLoading, setDownloadLoading] = useState(false);
+  const [statusMessage, setStatusMessage] = useState('');
 
-  const onResetHandler = () => {
-    setUsername('');
-    setPassword('');
-  };
+  const formData = location?.state?.formData;
 
-  const onSubmitHandler = async () => {
-    if (!username || !password) {
-      alert('Please enter username & password!');
-      return;
-    }
+  const createBill = async () => {
+    if (!formData) return;
     setIsLoading(true);
-    const { data, error } = await createBillApi({
-      ...location.state.formData,
-      username,
-      password,
-    });
-    if (data) {
-      if (data.success) {
-        setCreatedBill(data.bill || data.createdBill || null);
-        alert('Payment successful. You can download your receipt now.');
-      } else {
-        alert(data.message || 'Unable to create bill.');
-      }
-    } else {
-      alert(error.message);
-    }
+    const { data, error } = await createBillApi({ ...formData });
     setIsLoading(false);
-  };
 
-  const onDownloadHandler = async () => {
-    if (!createdBill?._id) {
-      alert('No bill found to download.');
-      return;
-    }
-    setDownloadLoading(true);
-    const { data, error } = await downloadBillApi(createdBill._id);
-    setDownloadLoading(false);
-
-    if (data) {
-      const downloadUrl = window.URL.createObjectURL(new Blob([data]));
-      const link = document.createElement('a');
-      link.href = downloadUrl;
-      link.setAttribute('download', `bill-${createdBill._id}.pdf`);
-      document.body.appendChild(link);
-      link.click();
-      link.parentNode.removeChild(link);
+    if (data?.success) {
+      const created = data.bill || data.createdBill || data.data || null;
+      const pdfUrl = data.pdfUrl || created?.pdfUrl;
+      setCreatedBill(created ? { ...created, pdfUrl: pdfUrl || created.pdfUrl } : null);
+      setStatusMessage('Bill created successfully');
     } else {
-      alert(error?.message || 'Unable to download bill.');
+      setStatusMessage(data?.message || error?.message || 'Unable to create bill.');
     }
   };
 
   useEffect(() => {
-    if (!location?.state?.formData) {
+    if (!formData) {
       history.replace('/');
       return;
     }
+    createBill();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   return (
@@ -94,13 +62,12 @@ const ConfirmPayment = () => {
                 </label>
                 <input
                   tabIndex='1'
-                  disabled={isLoading}
-                  required
-                  value={username}
-                  onChange={(e) => setUsername(e.target.value.trim())}
+                  disabled
                   className='form__input'
                   type='text'
                   id='username'
+                  value=''
+                  placeholder='Not required for this step'
                 />
               </div>
               <div className='form__control'>
@@ -109,14 +76,13 @@ const ConfirmPayment = () => {
                 </label>
                 <input
                   tabIndex='2'
-                  required
-                  disabled={isLoading}
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
+                  disabled
                   className='form__input'
                   type='password'
                   id='password'
                   minLength='5'
+                  value=''
+                  placeholder='Not required for this step'
                 />
               </div>
               <div className='text-center pl-4'>
@@ -124,29 +90,44 @@ const ConfirmPayment = () => {
                   disabled={isLoading}
                   type='button'
                   className='mr-3 btn-primary'
-                  onClick={onSubmitHandler}
+                  onClick={createBill}
                 >
-                  Submit
+                  {isLoading ? 'Processing...' : 'Submit'}
                 </button>
                 <button
                   disabled={isLoading}
                   type='button'
                   className='btn-danger'
-                  onClick={onResetHandler}
+                  onClick={() => history.push('/')}
                 >
                   Reset
                 </button>
               </div>
-              {createdBill && (
+              {statusMessage && (
+                <p className='text-center mt-3'>{statusMessage}</p>
+              )}
+              {createdBill?.pdfUrl && (
                 <div className='text-center pl-4 mt-3'>
-                  <button
-                    disabled={downloadLoading}
-                    type='button'
+                  <a
                     className='btn-primary'
-                    onClick={onDownloadHandler}
+                    href={createdBill.pdfUrl}
+                    target='_blank'
+                    rel='noopener noreferrer'
                   >
-                    {downloadLoading ? 'Preparing...' : 'Download Bill'}
-                  </button>
+                    Download Receipt
+                  </a>
+                </div>
+              )}
+              {createdBill?._id && !createdBill.pdfUrl && (
+                <div className='text-center pl-4 mt-3'>
+                  <a
+                    className='btn-primary'
+                    href={`${config.API_BASE_URL}/bill/${createdBill._id}/pdf`}
+                    target='_blank'
+                    rel='noopener noreferrer'
+                  >
+                    Download Receipt
+                  </a>
                 </div>
               )}
 
@@ -198,26 +179,7 @@ const ConfirmPayment = () => {
         </div>
         <br />
         <br />
-        <div className='paybox__copyright'>
-          <div className='col-sm-3'>&copy; Copyright SBI.</div>
-          <div className='col-sm-9'>
-            <div>
-              <a href='#'>Privacy Statement</a>
-              <span className='mx-2'>|</span>
-              <a href='#'>Disclosure</a>
-              <span className='mx-2'>|</span>
-              <a href='#'>Password management</a>
-              <span className='mx-2'>|</span>
-              <a href='#'>Security Tips</a>
-              <span className='mx-2'>|</span>
-              <a href='#'>Terms of Use</a>
-            </div>
-          </div>
-        </div>
-        <br />
-        <br />
       </div>
-      <br />
     </>
   );
 };

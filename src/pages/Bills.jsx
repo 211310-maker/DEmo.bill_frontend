@@ -68,20 +68,20 @@ const Bills = () => {
   const onResetHandler = async () => {
     setInitialLoading(true);
     const isLoggedIn = JSON.parse(localStorage.getItem(LOCAL_STORAGE_KEY));
-    loadData(`createdBy=${isLoggedIn._id}`);
+    loadData(isLoggedIn.role === 'admin' ? '' : `createdBy=${isLoggedIn._id}`);
   };
 
   const loadData = async (params) => {
     const { data, error } = await getAllBillsApi(params);
     setInitialLoading(false);
     if (data?.success) {
+      const fetchedBills = Array.isArray(data.bills) ? data.bills : [];
       let amount = 0;
-      data.bills.forEach((e) => {
+      fetchedBills.forEach((e) => {
         amount += +e.totalAmount;
       });
       setTotalBillAmount(amount);
-      console.log(data.bills);
-      setBills(data.bills);
+      setBills(fetchedBills);
     } else {
       alert(data?.message || error?.message || 'Unable to load bills');
     }
@@ -97,7 +97,7 @@ const Bills = () => {
   };
 
   useEffect(() => {
-    loadData(`createdBy=${isLoggedIn._id}`);
+    loadData(isLoggedIn.role === 'admin' ? '' : `createdBy=${isLoggedIn._id}`);
     if (isLoggedIn.role === 'admin') {
       loadAllUsers();
     }
@@ -183,13 +183,14 @@ const Bills = () => {
                   <th scope='col'>Mobile No.</th>
                   <th scope='col'>User Charges</th>
                   <th scope='col'>Tax Amount</th>
+                  <th scope='col'>Actions</th>
                 </tr>
               </thead>
 
               <tbody>
                 {bills.length == 0 && (
                   <tr>
-                    <td className='text-center' colSpan='13'>
+                    <td className='text-center' colSpan='14'>
                       <h3>No data</h3>
                     </td>
                   </tr>
@@ -199,12 +200,17 @@ const Bills = () => {
                   return (
                     <tr key={bill._id}>
                       <td>
-                        <a
-                          target='_blank'
-                          href={`${BASE_URL}/bill/${bill._id}/pdf`}
-                        >
-                          {bill.receiptNo}
-                        </a>
+                        {bill?._id ? (
+                          <a
+                            target='_blank'
+                            rel='noopener noreferrer'
+                            href={`${BASE_URL}/bill/${bill._id}/pdf`}
+                          >
+                            {bill.receiptNo || bill._id}
+                          </a>
+                        ) : (
+                          bill?.receiptNo || '-'
+                        )}
                       </td>
                       <td>
                         {qrInfo ? (
@@ -219,17 +225,37 @@ const Bills = () => {
                           '-'
                         )}
                       </td>
-                      <td scope='row'>{bill.vehicleClass}</td>
-                      <td>{bill.vehicleNo}</td>
-                      <td>{bill.ownerName}</td>
-                      <td>{bill.fromState}</td>
-                      <td>{bill.state}</td>
-                      <td scope='row'>{bill.taxMode}</td>
-                      <td>{formatDate(bill.taxFromDate, false)}</td>
-                      <td>{formatDate(bill.taxUptoDate, false)}</td>
-                      <td scope='row'>{bill.mobileNo}</td>
+                      <td scope='row'>{bill?.vehicleClass}</td>
+                      <td>{bill?.vehicleNo}</td>
+                      <td>{bill?.ownerName}</td>
+                      <td>{bill?.fromState}</td>
+                      <td>{bill?.state}</td>
+                      <td scope='row'>{bill?.taxMode}</td>
+                      <td>{formatDate(bill?.taxFromDate, false)}</td>
+                      <td>{formatDate(bill?.taxUptoDate, false)}</td>
+                      <td scope='row'>{bill?.mobileNo}</td>
                       <td scope='row'>-</td>
-                      <td scope='row'>{bill.totalAmount}</td>
+                      <td scope='row'>{bill?.totalAmount}</td>
+                      <td>
+                        {bill?._id && (
+                          <div className='d-flex flex-column'>
+                            <a
+                              target='_blank'
+                              rel='noopener noreferrer'
+                              href={`${BASE_URL}/bill/${bill._id}/pdf`}
+                            >
+                              View PDF
+                            </a>
+                            <a
+                              target='_blank'
+                              rel='noopener noreferrer'
+                              href={`${BASE_URL}/bill/${bill._id}/page`}
+                            >
+                              Open Page
+                            </a>
+                          </div>
+                        )}
+                      </td>
                     </tr>
                   );
                 })}
