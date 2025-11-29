@@ -48,6 +48,9 @@ const Admin = () => {
     if (data) {
       if (data.success) {
         setSuccessMessage('User created successfully.');
+        if (data.link) {
+          setGeneratedLink(data.link);
+        }
         setUsername('');
         setPassword('');
         setAccessState([]);

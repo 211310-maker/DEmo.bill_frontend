@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useHistory, useParams } from 'react-router-dom';
 import { provideAccessApi, getAcessApi } from '../utils/api';
-import { LOCAL_STORAGE_KEY } from '../constants';
+import { saveSession } from '../utils/auth';
 
 const GetAccess = () => {
   const history = useHistory();
@@ -52,10 +52,7 @@ const GetAccess = () => {
     if (data?.success) {
       setStatusMessage('OTP verified, account created');
       if (data.user && data.token) {
-        localStorage.setItem(
-          LOCAL_STORAGE_KEY,
-          JSON.stringify({ ...data.user, token: data.token })
-        );
+        saveSession(data.token, data.user);
         history.push('/');
       } else {
         history.push('/admin/users');

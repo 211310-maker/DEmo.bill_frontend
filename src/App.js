@@ -37,15 +37,21 @@ import Chhattisgarh from "./pages/Chhattisgarh";
 import Odisha from "./pages/Odisha";
 import Tamilnadu from "./pages/Tamilnadu";
 import Kerala from "./pages/Kerala";
+import Assam from "./pages/Assam";
+import DamanDiu from "./pages/DamanDiu";
+import Puducherry from "./pages/Puducherry";
+import Sikkim from "./pages/Sikkim";
+import Telangana from "./pages/Telangana";
+import Tripura from "./pages/Tripura";
 
-import { LOCAL_STORAGE_KEY } from "./constants";
+import { APP_BASENAME } from "./constants";
 import { webIndexApi } from "./utils/api";
+import { clearSession, getStoredToken, getStoredUser, saveSession } from "./utils/auth";
 
 function App() {
   return (
     <div className="App">
-      {/* basename="app" kept as in your original code */}
-      <Router basename="app">
+      <Router basename={APP_BASENAME}>
         <Switch>
           <ProtectedRoute exact path="/" component={Index} />
           <Route exact path="/login" component={Login} />
@@ -76,6 +82,12 @@ function App() {
           <ProtectedRoute exact path="/od" component={Odisha} />
           <ProtectedRoute exact path="/tn" component={Tamilnadu} />
           <ProtectedRoute exact path="/kl" component={Kerala} />
+          <ProtectedRoute exact path="/ts" component={Telangana} />
+          <ProtectedRoute exact path="/as" component={Assam} />
+          <ProtectedRoute exact path="/py" component={Puducherry} />
+          <ProtectedRoute exact path="/dd" component={DamanDiu} />
+          <ProtectedRoute exact path="/sk" component={Sikkim} />
+          <ProtectedRoute exact path="/tr" component={Tripura} />
 
           <ProtectedRoute
             exact
@@ -112,21 +124,24 @@ const Check = () => {
 
   useEffect(() => {
     const init = async () => {
-      const userInfo = JSON.parse(localStorage.getItem(LOCAL_STORAGE_KEY));
-      if (!userInfo?.token) return;
+      const token = getStoredToken();
+      const currentUser = getStoredUser();
+
+      if (!token || !currentUser) {
+        clearSession();
+        history.push("/login");
+        return;
+      }
 
       const { data, error } = await webIndexApi({
-        authToken: userInfo.token,
+        authToken: token,
       });
 
       if (data && data.success && data.user) {
-        localStorage.setItem(
-          LOCAL_STORAGE_KEY,
-          JSON.stringify({ ...data.user, token: userInfo.token })
-        );
+        saveSession(token, data.user);
       } else {
         history.push("/login");
-        localStorage.removeItem(LOCAL_STORAGE_KEY);
+        clearSession();
         console.log(error?.message || "user not found");
       }
     };
@@ -138,9 +153,10 @@ const Check = () => {
 };
 
 const ProtectedRoute = ({ component: Component, ...rest }) => {
-  const userInfo = JSON.parse(localStorage.getItem(LOCAL_STORAGE_KEY) || "null");
+  const token = getStoredToken();
+  const userInfo = getStoredUser();
 
-  if (userInfo?.token) {
+  if (token && userInfo) {
     return (
       <Route
         {...rest}
@@ -149,6 +165,7 @@ const ProtectedRoute = ({ component: Component, ...rest }) => {
     );
   }
 
+  clearSession();
   return (
     <Redirect
       to={{
@@ -159,9 +176,10 @@ const ProtectedRoute = ({ component: Component, ...rest }) => {
 };
 
 const AdminRoute = ({ component: Component, ...rest }) => {
-  const userInfo = JSON.parse(localStorage.getItem(LOCAL_STORAGE_KEY) || "null");
+  const token = getStoredToken();
+  const userInfo = getStoredUser();
 
-  if (userInfo?.token && userInfo.role === "admin") {
+  if (token && userInfo?.role === "admin") {
     return (
       <Route
         {...rest}
@@ -170,6 +188,7 @@ const AdminRoute = ({ component: Component, ...rest }) => {
     );
   }
 
+  clearSession();
   return (
     <Redirect
       to={{

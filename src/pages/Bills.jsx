@@ -3,8 +3,9 @@ import Header from '../components/Header';
 import Loader from '../components/Loader';
 import { getAllBillsApi, getAllUsersApi } from '../utils/api';
 import { formatDate } from '../utils/helper';
-import { fields, LOCAL_STORAGE_KEY } from '../constants';
+import { fields } from '../constants';
 import config from '../config/env';
+import { getStoredUser } from '../utils/auth';
 const BASE_URL = config['API_BASE_URL'];
 
 const isImageLike = (qrValue) => {
@@ -38,7 +39,7 @@ const getQrSource = (bill) => {
   return { src: generatedQrSrc, value: qrString };
 };
 const Bills = () => {
-  const isLoggedIn = JSON.parse(localStorage.getItem(LOCAL_STORAGE_KEY));
+  const isLoggedIn = getStoredUser();
   const [filter, setFilter] = useState({
     state: '',
   });
@@ -67,8 +68,8 @@ const Bills = () => {
   };
   const onResetHandler = async () => {
     setInitialLoading(true);
-    const isLoggedIn = JSON.parse(localStorage.getItem(LOCAL_STORAGE_KEY));
-    loadData(isLoggedIn.role === 'admin' ? '' : `createdBy=${isLoggedIn._id}`);
+    const currentUser = getStoredUser();
+    loadData(currentUser?.role === 'admin' ? '' : `createdBy=${currentUser?._id || ''}`);
   };
 
   const loadData = async (params) => {
@@ -97,11 +98,12 @@ const Bills = () => {
   };
 
   useEffect(() => {
-    loadData(isLoggedIn.role === 'admin' ? '' : `createdBy=${isLoggedIn._id}`);
-    if (isLoggedIn.role === 'admin') {
+    if (!isLoggedIn) return;
+    loadData(isLoggedIn?.role === 'admin' ? '' : `createdBy=${isLoggedIn?._id}`);
+    if (isLoggedIn?.role === 'admin') {
       loadAllUsers();
     }
-  }, []);
+  }, [isLoggedIn]);
   return (
     <>
       <Header />
@@ -125,7 +127,7 @@ const Bills = () => {
 
         {!initialLoading && (
           <>
-            {isLoggedIn.role === 'admin' && (
+            {isLoggedIn?.role === 'admin' && (
               <div className='text-center d-flex j-center a-center'>
                 <div>
                   <b>User :</b>

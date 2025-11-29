@@ -1,8 +1,19 @@
 import config from "../config/env";
 import axios from "axios";
-import { LOCAL_STORAGE_KEY } from "../constants";
+import { getStoredToken, redirectToLogin } from "./auth";
 
 const BASE_URL = config["API_BASE_URL"];
+
+axios.interceptors.request.use((options) => {
+  const token = getStoredToken();
+  if (token) {
+    options.headers = {
+      ...options.headers,
+      "x-auth-token": token,
+    };
+  }
+  return options;
+});
 
 const normalizeBill = (bill) => {
   if (!bill) return bill;
@@ -46,13 +57,23 @@ export const Urls = {
   allBills: BASE_URL + "/bill",
 };
 
-const safeError = (error) => error.response?.data || { message: error.message };
+const safeError = (error) => {
+  if (error?.response?.status === 401 && getStoredToken()) {
+    redirectToLogin();
+  }
+  return error?.response?.data || { message: error?.message };
+};
 
 const getAuthHeaders = () => {
-  const user = JSON.parse(localStorage.getItem(LOCAL_STORAGE_KEY));
+  const token = getStoredToken();
+
+  if (!token) {
+    redirectToLogin();
+  }
+
   return {
     "Content-type": "application/json",
-    "x-auth-token": user?.token,
+    "x-auth-token": token,
   };
 };
 
@@ -70,7 +91,7 @@ export const loginApi = async (payLoad) => {
 export const webIndexApi = async (payload) => {
   try {
     const { data } = await axios.post(Urls.webIndex, payload, {
-      headers: { "Content-type": "application/json" },
+      headers: getAuthHeaders(),
     });
     return { data, error: null };
   } catch (error) {

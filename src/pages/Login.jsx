@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
 import LoginHeader from '../components/LoginHeader';
 import { loginApi } from '../utils/api';
-import { LOCAL_STORAGE_KEY } from '../constants';
 import { useHistory } from 'react-router';
+import { saveSession } from '../utils/auth';
 
 const Login = () => {
   const history = useHistory();
@@ -29,10 +29,7 @@ const Login = () => {
     }
 
     if (data?.success) {
-      localStorage.setItem(
-        LOCAL_STORAGE_KEY,
-        JSON.stringify({ token: data.token, ...data.user })
-      );
+      saveSession(data.token, data.user);
       setUsername('');
       setPassword('');
       history.push('/');
