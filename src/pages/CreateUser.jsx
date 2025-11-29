@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import Header from '../components/Header';
 import Select from 'react-select';
 import { fields } from '../constants';
-import { createUserApi } from '../utils/api';
+import { createTempUserApi, createUserApi } from '../utils/api';
 
 const Admin = () => {
   const [isLoading, setIsLoading] = useState(false);
@@ -11,6 +11,22 @@ const Admin = () => {
   const [accessState, setAccessState] = useState([]);
   const [successMessage, setSuccessMessage] = useState('');
   const [errorMessage, setErrorMessage] = useState('');
+  const [generatedLink, setGeneratedLink] = useState('');
+
+  const onGenerateLink = async () => {
+    setSuccessMessage('');
+    setErrorMessage('');
+    setGeneratedLink('');
+    setIsLoading(true);
+    const { data, error } = await createTempUserApi();
+    setIsLoading(false);
+    if (data?.link) {
+      setGeneratedLink(data.link);
+      setSuccessMessage('Registration link generated');
+    } else {
+      setErrorMessage(data?.message || error?.message || 'Unable to generate link');
+    }
+  };
 
   const onSubmitHandler = async () => {
     setSuccessMessage('');
@@ -58,6 +74,38 @@ const Admin = () => {
         {successMessage && (
           <p className='text-success font-weight-bold mt-3'>{successMessage}</p>
         )}
+        <div className='form__control'>
+          <button
+            disabled={isLoading}
+            type='button'
+            className='btn-primary'
+            onClick={onGenerateLink}
+          >
+            {isLoading ? 'Generating...' : 'Generate Registration Link'}
+          </button>
+          {generatedLink && (
+            <div className='mt-2 text-left'>
+              <p className='mb-1'>Share this link with the user:</p>
+              <div className='d-flex'>
+                <input
+                  readOnly
+                  className='form__input w-100'
+                  value={generatedLink}
+                  onFocus={(e) => e.target.select()}
+                />
+                <button
+                  type='button'
+                  className='btn-success ml-2'
+                  onClick={() => {
+                    navigator.clipboard.writeText(generatedLink);
+                  }}
+                >
+                  Copy
+                </button>
+              </div>
+            </div>
+          )}
+        </div>
         <div className='form__control'>
           <label className='form__label d-block w-100 text-left' htmlFor='username'>
             Username<sup>*</sup>

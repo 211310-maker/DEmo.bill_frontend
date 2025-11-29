@@ -8,6 +8,9 @@ import { getDetailsApi } from '../utils/api';
 
 const Bihar = () => {
   const isLoggedIn = JSON.parse(localStorage.getItem(LOCAL_STORAGE_KEY));
+  const accessStates =
+    (isLoggedIn && (isLoggedIn.accessState || isLoggedIn.allowedStates || isLoggedIn.stateAccess)) ||
+    [];
 
   const state = 'bihar';
   const history = useHistory();
@@ -47,6 +50,7 @@ const Bihar = () => {
     setIsLoading(true);
     const { data } = await getDetailsApi({
       vehicleNo: payLoad.vehicleNo,
+      state,
     });
     setIsLoading(false);
     if (data && data.success) {
@@ -68,7 +72,7 @@ const Bihar = () => {
     if (!payLoad.unladenWeight) {
       payLoad.unladenWeight = 0;
     }
-    history.push('/select-payment', {
+    history.push('/confirm-payment', {
       formData: {
         ...payLoad,
         state,
@@ -89,7 +93,8 @@ const Bihar = () => {
     setPayLoad({ ...p });
   };
 
-  if (!isLoggedIn.accessState.includes(fields.stateName.bihar)) {
+  const hasStateAccess = accessStates.includes(fields.stateName.bihar) || accessStates.includes(state);
+  if (!hasStateAccess) {
     return (
       <>
         <Header />

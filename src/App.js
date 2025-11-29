@@ -88,7 +88,7 @@ function App() {
             component={ConfirmPayment}
           />
 
-          <Route exact path="/register/:id/get-access" component={GetAccess} />
+          <Route exact path="/register/:token/get-access" component={GetAccess} />
 
           {/* 404 fallback */}
           <Route component={NotFound} />
@@ -115,7 +115,7 @@ const Check = () => {
       const userInfo = JSON.parse(localStorage.getItem(LOCAL_STORAGE_KEY));
       if (!userInfo?.token) return;
 
-      const { data } = await webIndexApi({
+      const { data, error } = await webIndexApi({
         authToken: userInfo.token,
       });
 
@@ -127,7 +127,7 @@ const Check = () => {
       } else {
         history.push("/login");
         localStorage.removeItem(LOCAL_STORAGE_KEY);
-        console.log("user not found");
+        console.log(error?.message || "user not found");
       }
     };
 

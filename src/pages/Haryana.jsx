@@ -8,6 +8,9 @@ import { getDetailsApi } from '../utils/api';
 import { randomNumber } from '../utils/helper';
 const Haryana = () => {
   const isLoggedIn = JSON.parse(localStorage.getItem(LOCAL_STORAGE_KEY));
+  const accessStates =
+    (isLoggedIn && (isLoggedIn.accessState || isLoggedIn.allowedStates || isLoggedIn.stateAccess)) ||
+    [];
   const history = useHistory();
   const state = 'haryana';
 
@@ -44,6 +47,7 @@ const Haryana = () => {
     setIsLoading(true);
     const { data } = await getDetailsApi({
       vehicleNo: payLoad.vehicleNo,
+      state,
     });
     setIsLoading(false);
     if (data && data.success) {
@@ -80,7 +84,7 @@ const Haryana = () => {
       payLoad.unladenWeight = 0;
     }
     payLoad.bankRefNo = randomNumber(8);
-    history.push('/select-payment', {
+    history.push('/confirm-payment', {
       formData: {
         ...payLoad,
         state,
@@ -97,7 +101,8 @@ const Haryana = () => {
     setPayLoad({ ...p });
   };
 
-  if (!isLoggedIn.accessState.includes(fields.stateName.haryana)) {
+  const hasStateAccess = accessStates.includes(fields.stateName.haryana) || accessStates.includes(state);
+  if (!hasStateAccess) {
     return (
       <>
         <Header />

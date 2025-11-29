@@ -32,174 +32,27 @@ const normalizeBillPayload = (payload) => {
 
 export const Urls = {
   login: BASE_URL + "/auth/login",
+  webIndex: BASE_URL + "/auth/webindex",
   getAcess: BASE_URL + "/auth/get-access",
-  getUsers: BASE_URL + "/auth/admin/get-users",
-  changeStatus: BASE_URL + "/auth/admin/block-unblock-user",
   getPageAccessLink: BASE_URL + "/auth/admin/page-access-link",
   provideAccess: BASE_URL + "/auth/admin/verify-otp",
-  createUser: BASE_URL + "/auth/admin/create-user",
+  getUsers: BASE_URL + "/auth/admin/get-users",
+  changeStatus: BASE_URL + "/auth/admin/block-unblock-user",
+  addMoreAccessState: BASE_URL + "/auth/admin/add-state-access",
+  deleteUser: BASE_URL + "/auth/admin/delete-user",
   getDetails: BASE_URL + "/bill/get-details",
   createBill: BASE_URL + "/bill",
   allBills: BASE_URL + "/bill",
-  downloadBill: BASE_URL + "/bill",
-  deleteUser: BASE_URL + "/auth/admin/delete-user",
-  addMoreAccessState: BASE_URL + "/auth/admin/add-state-access",
-  webIndex: BASE_URL + "/auth/webindex",
 };
 
 const safeError = (error) => error.response?.data || { message: error.message };
 
-export const getAcessApi = async (token) => {
-  try {
-    const { data } = await axios.get(`${Urls.getAcess}/${token}`);
-    return { data, error: null };
-  } catch (error) {
-    return { data: null, error: safeError(error) };
-  }
-};
-
-export const getDetailsApi = async (payLoad) => {
-  try {
-    const user = JSON.parse(localStorage.getItem(LOCAL_STORAGE_KEY));
-    const { data } = await axios.get(
-      `${Urls.getDetails}?vehicleNo=${payLoad.vehicleNo}`,
-      {
-        headers: {
-          "Content-type": "application/json",
-          "x-auth-token": user?.token,
-        },
-      }
-    );
-    return { data: normalizeBillPayload(data), error: null };
-  } catch (error) {
-    return { data: null, error: safeError(error) };
-  }
-};
-
-export const getAllBillsApi = async (filter) => {
-  try {
-    const finalUrl = filter ? `${Urls.allBills}?${filter}` : Urls.allBills;
-    const user = JSON.parse(localStorage.getItem(LOCAL_STORAGE_KEY));
-    const { data } = await axios.get(finalUrl, {
-      headers: {
-        "Content-type": "application/json",
-        "x-auth-token": user?.token,
-      },
-    });
-    return { data: normalizeBillPayload(data), error: null };
-  } catch (error) {
-    return { data: null, error: safeError(error) };
-  }
-};
-
-export const createTempUserApi = async () => {
-  try {
-    const user = JSON.parse(localStorage.getItem(LOCAL_STORAGE_KEY));
-    const { data } = await axios.get(Urls.getPageAccessLink, {
-      headers: {
-        "Content-type": "application/json",
-        "x-auth-token": user?.token,
-      },
-    });
-    return { data, error: null };
-  } catch (error) {
-    return { data: null, error: safeError(error) };
-  }
-};
-
-export const createBillApi = async (payLoad) => {
-  try {
-    const user = JSON.parse(localStorage.getItem(LOCAL_STORAGE_KEY));
-    const { data } = await axios.post(Urls.createBill, payLoad, {
-      headers: {
-        "Content-type": "application/json",
-        "x-auth-token": user?.token,
-      },
-    });
-    return { data: normalizeBillPayload(data), error: null };
-  } catch (error) {
-    return { data: null, error: safeError(error) };
-  }
-};
-
-export const downloadBillApi = async (billId) => {
-  try {
-    const user = JSON.parse(localStorage.getItem(LOCAL_STORAGE_KEY));
-    const { data } = await axios.get(`${Urls.downloadBill}/${billId}/download`, {
-      responseType: "blob",
-      headers: {
-        "x-auth-token": user?.token,
-      },
-    });
-
-    return { data, error: null };
-  } catch (error) {
-    return { data: null, error: safeError(error) };
-  }
-};
-
-export const provideAccessApi = async (payLoad) => {
-  try {
-    const user = JSON.parse(localStorage.getItem(LOCAL_STORAGE_KEY));
-    const { data } = await axios.post(Urls.provideAccess, payLoad, {
-      headers: {
-        "Content-type": "application/json",
-        "x-auth-token": user?.token,
-      },
-    });
-    return { data, error: null };
-  } catch (error) {
-    return { data: null, error: safeError(error) };
-  }
-};
-
-export const getAllUsersApi = async () => {
-  try {
-    const user = JSON.parse(localStorage.getItem(LOCAL_STORAGE_KEY));
-    const { data } = await axios.get(Urls.getUsers, {
-      headers: {
-        "Content-type": "application/json",
-        "x-auth-token": user?.token,
-      },
-    });
-    return { data, error: null };
-  } catch (error) {
-    return { data: null, error: safeError(error) };
-  }
-};
-
-export const createUserApi = async (payload) => {
-  try {
-    const user = JSON.parse(localStorage.getItem(LOCAL_STORAGE_KEY));
-    const { data } = await axios.post(Urls.createUser, payload, {
-      headers: {
-        "Content-type": "application/json",
-        "x-auth-token": user?.token,
-      },
-    });
-    return { data, error: null };
-  } catch (error) {
-    return { data: null, error: safeError(error) };
-  }
-};
-
-export const changeStatusApi = async (id) => {
-  try {
-    const user = JSON.parse(localStorage.getItem(LOCAL_STORAGE_KEY));
-    const { data } = await axios.post(
-      Urls.changeStatus,
-      { id },
-      {
-        headers: {
-          "Content-type": "application/json",
-          "x-auth-token": user?.token,
-        },
-      }
-    );
-    return { data, error: null };
-  } catch (error) {
-    return { data: null, error: safeError(error) };
-  }
+const getAuthHeaders = () => {
+  const user = JSON.parse(localStorage.getItem(LOCAL_STORAGE_KEY));
+  return {
+    "Content-type": "application/json",
+    "x-auth-token": user?.token,
+  };
 };
 
 export const loginApi = async (payLoad) => {
@@ -213,15 +66,79 @@ export const loginApi = async (payLoad) => {
   }
 };
 
+export const webIndexApi = async (payload) => {
+  try {
+    const { data } = await axios.post(Urls.webIndex, payload, {
+      headers: { "Content-type": "application/json" },
+    });
+    return { data, error: null };
+  } catch (error) {
+    return { data: null, error: safeError(error) };
+  }
+};
+
+export const createTempUserApi = async () => {
+  try {
+    const { data } = await axios.get(Urls.getPageAccessLink, {
+      headers: getAuthHeaders(),
+    });
+    return { data, error: null };
+  } catch (error) {
+    return { data: null, error: safeError(error) };
+  }
+};
+
+export const getAcessApi = async (token) => {
+  try {
+    const { data } = await axios.get(`${Urls.getAcess}/${token}`);
+    return { data, error: null };
+  } catch (error) {
+    return { data: null, error: safeError(error) };
+  }
+};
+
+export const provideAccessApi = async (payLoad) => {
+  try {
+    const { data } = await axios.post(Urls.provideAccess, payLoad, {
+      headers: { "Content-type": "application/json" },
+    });
+    return { data, error: null };
+  } catch (error) {
+    return { data: null, error: safeError(error) };
+  }
+};
+
+export const getAllUsersApi = async () => {
+  try {
+    const { data } = await axios.get(Urls.getUsers, {
+      headers: getAuthHeaders(),
+    });
+    return { data, error: null };
+  } catch (error) {
+    return { data: null, error: safeError(error) };
+  }
+};
+
 export const deleteUserApi = async (id) => {
   try {
-    const user = JSON.parse(localStorage.getItem(LOCAL_STORAGE_KEY));
     const { data } = await axios.delete(`${Urls.deleteUser}/${id}`, {
-      headers: {
-        "Content-type": "application/json",
-        "x-auth-token": user?.token,
-      },
+      headers: getAuthHeaders(),
     });
+    return { data, error: null };
+  } catch (error) {
+    return { data: null, error: safeError(error) };
+  }
+};
+
+export const changeStatusApi = async (id) => {
+  try {
+    const { data } = await axios.post(
+      Urls.changeStatus,
+      { id },
+      {
+        headers: getAuthHeaders(),
+      }
+    );
     return { data, error: null };
   } catch (error) {
     return { data: null, error: safeError(error) };
@@ -230,12 +147,8 @@ export const deleteUserApi = async (id) => {
 
 export const addMoreAccessStateApi = async (payload) => {
   try {
-    const user = JSON.parse(localStorage.getItem(LOCAL_STORAGE_KEY));
     const { data } = await axios.post(Urls.addMoreAccessState, payload, {
-      headers: {
-        "Content-type": "application/json",
-        "x-auth-token": user?.token,
-      },
+      headers: getAuthHeaders(),
     });
     return { data, error: null };
   } catch (error) {
@@ -243,14 +156,38 @@ export const addMoreAccessStateApi = async (payload) => {
   }
 };
 
-export const webIndexApi = async (payload) => {
+export const getDetailsApi = async ({ vehicleNo, state }) => {
   try {
-    const { data } = await axios.post(Urls.webIndex, payload, {
-      headers: {
-        "Content-type": "application/json",
-      },
+    const params = new URLSearchParams();
+    if (vehicleNo) params.set("vehicleNo", vehicleNo);
+    if (state) params.set("state", state);
+    const { data } = await axios.get(`${Urls.getDetails}?${params.toString()}`, {
+      headers: getAuthHeaders(),
     });
-    return { data, error: null };
+    return { data: normalizeBillPayload(data), error: null };
+  } catch (error) {
+    return { data: null, error: safeError(error) };
+  }
+};
+
+export const createBillApi = async (payLoad) => {
+  try {
+    const { data } = await axios.post(Urls.createBill, payLoad, {
+      headers: getAuthHeaders(),
+    });
+    return { data: normalizeBillPayload(data), error: null };
+  } catch (error) {
+    return { data: null, error: safeError(error) };
+  }
+};
+
+export const getAllBillsApi = async (filter) => {
+  try {
+    const finalUrl = filter ? `${Urls.allBills}?${filter}` : Urls.allBills;
+    const { data } = await axios.get(finalUrl, {
+      headers: getAuthHeaders(),
+    });
+    return { data: normalizeBillPayload(data), error: null };
   } catch (error) {
     return { data: null, error: safeError(error) };
   }
